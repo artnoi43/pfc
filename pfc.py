@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import os
 
+from getpass import getpass
 from binascii import hexlify, unhexlify
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -12,12 +13,6 @@ parser.add_argument('-i', '--inf', type=str, default='files/plain')
 parser.add_argument('-o', '--outf',type=str, default='files/crypt')
 parser.add_argument('-d', '--dec', type=bool,default=False)
 args = parser.parse_args()
-
-def getPass() -> str:
-	passphrase = (input('Enter passphrase: '))
-	return str(passphrase)
-
-# deriveKey(), encrypt(), and decrypt() are from https://gist.github.com/renesugar/d8ff6d7609e870d2de5d0d4eb5f9d135#file-aes-py
 
 def deriveKey(passphrase: str, salt: bytes=None) -> [str, bytes]:
     if salt is None:
@@ -49,9 +44,9 @@ if __name__ == '__main__':
 		quit(1)
 
 	if args.dec:
-		output = decrypt(getPass(), indata)
+		output = decrypt(getpass(), indata)
 	else:
-		output = encrypt(getPass(), indata)
+		output = encrypt(getpass(), indata)
 
 	if os.path.isfile(args.outf):
 		outfile = open(args.outf, 'w')
