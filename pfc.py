@@ -5,17 +5,12 @@ import os
 from binascii import hexlify, unhexlify
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-defInfile = 'files/plain'
-defOutfile = 'files/secret'
-
 # initialize cli parser
 parser = argparse.ArgumentParser()
-
 # optional args
-parser.add_argument('-i', '--inf', type=str, default=defInfile)
-parser.add_argument('-o', '--outf',type=str, default=defOutfile)
+parser.add_argument('-i', '--inf', type=str, default='files/plain')
+parser.add_argument('-o', '--outf',type=str, default='files/crypt')
 parser.add_argument('-d', '--dec', type=bool,default=False)
-
 args = parser.parse_args()
 
 def getPass() -> str:
