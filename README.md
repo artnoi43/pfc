@@ -5,6 +5,9 @@ For now, it only supports passphrase (hashed with PBKDF2 to produce encryption k
 
 The AES256-GCM code (`deriveKey()`, `encrypt()`, `decrypt()`) is copied from this [source](https://gist.github.com/renesugar/d8ff6d7609e870d2de5d0d4eb5f9d135#file-aes-py).
 
+## Dependency
+Python standard library and common modules `cryptography` is required for pfc. 
+
 ## Usage
 
     usage: pfc.py [-h] [-i INF] [-o OUTF] [-d DEC]
@@ -16,8 +19,10 @@ The AES256-GCM code (`deriveKey()`, `encrypt()`, `decrypt()`) is copied from thi
 		--outfile OUTF
 	-d <bool>
 		--decrypt BOOL
+	-t <bool>
+		--text BOOL
 
-> The decrypt flag can be in any form, numeric (0, 1), alphabet (T, t, F, f), or string (True, true, False, false).
+> The decrypt and text flags can be in any form, numeric (0, 1), alphabet (T, t, F, f), or string (True, true, False, false).
 
 To encrypt infile `mysecret.txt` to outfile `lol`:
 
@@ -27,5 +32,6 @@ To decrypt infile `lol` to outfile `out`:
 
     $ python pfc.py -d t -i lol -o out;
 
-## Dependency
-Python standard library and common modules `cryptography` is required for pfc. 
+To encrypt/decrypt text from standard input, use `-t` (`--text`) flag:
+
+    $ python pfc.py -t 1 -i lol -o out;
