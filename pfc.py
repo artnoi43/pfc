@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser()
 # optional args
 parser.add_argument('-i', '--inf', type=str, default='files/plain')
 parser.add_argument('-o', '--outf',type=str, default='files/crypt')
+parser.add_argument('-t', '--text',type=bool, default=False)
 parser.add_argument('-d', '--dec', type=bool,default=False)
 args = parser.parse_args()
 
@@ -39,16 +40,24 @@ if __name__ == '__main__':
 	if os.path.isfile(args.inf):
 		infile = open(args.inf, 'r+')
 		indata = infile.read()
+	elif args.text:
+		indata = input("Enter plaintext to encrypt: ")
+		printout = True
 	else:
 		print(f'File not found: {args.inf}')
 		quit(1)
 
+	# Decryption/encryption
 	if args.dec:
 		output = decrypt(getpass(), indata)
 	else:
 		output = encrypt(getpass(), indata)
 
-	if os.path.isfile(args.outf):
+	# Quit before writing out if -t
+	if args.text:
+		print(output)
+		quit(0)
+	elif os.path.isfile(args.outf):
 		outfile = open(args.outf, 'w')
 	else:
 		outfile = open(args.outf, 'x')
