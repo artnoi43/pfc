@@ -8,34 +8,54 @@ from getpass import getpass
 from binascii import hexlify, unhexlify
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-# initialize cli parser
+# Initialize cli parser
 parser = argparse.ArgumentParser()
-# optional args
+# Optional args
+## Input/output files
 parser.add_argument('-i', '--inf', type=str, default='files/plain')
-parser.add_argument('-o', '--outf',type=str, default='files/crypt')
+parser.add_argument('-o', '--outf',type=str, default='/tmp/pfc.out')
+## Decrypt flag
+parser.add_argument('-d', '--dec', type=bool, default=False)
+## Console input
 parser.add_argument('-t', '--text',type=bool, default=False)
-parser.add_argument('-d', '--dec', type=bool,default=False)
 args = parser.parse_args()
 
+lenIV = 12
+lenSalt = 32
+
 def deriveKey(passphrase: str, salt: bytes=None) -> [str, bytes]:
-    if salt is None:
-        salt = os.urandom(32)
-    return hashlib.pbkdf2_hmac("sha256", passphrase.encode("utf8"), salt, 1048576), salt
+	if salt is None:
+		salt = os.urandom(lenSalt)
+	
+	return hashlib.pbkdf2_hmac("sha256", passphrase.encode("utf8"), salt, 1048576), salt
 
 def encrypt(passphrase: str, plaintext: str) -> str:
-    key, salt = deriveKey(passphrase)
-    aes = AESGCM(key)
-    iv = os.urandom(12)
-    plaintext = plaintext.encode("utf8")
-    ciphertext = aes.encrypt(iv, plaintext, None)
-    return "%s-%s-%s" % (hexlify(salt).decode("utf8"), hexlify(iv).decode("utf8"), hexlify(ciphertext).decode("utf8"))
+	# Encode string to bytes
+	plaintext = plaintext.encode("utf8")
+
+	key, salt = deriveKey(passphrase)
+	aes = AESGCM(key)
+	iv = os.urandom(lenIV)
+	ciphertext = aes.encrypt(iv, plaintext, None)
+
+	# Return encrypted output in hexadecimal
+	return "%s%s%s" % (hexlify(ciphertext).decode("utf8"), hexlify(iv).decode("utf8"), hexlify(salt).decode("utf8"))
 
 def decrypt(passphrase: str, ciphertext: str) -> str:
-    salt, iv, ciphertext = map(unhexlify, ciphertext.split("-"))
-    key, _ = deriveKey(passphrase, salt)
-    aes = AESGCM(key)
-    plaintext = aes.decrypt(iv, ciphertext, None)
-    return plaintext.decode("utf8")
+	# Decode hexadecimals
+	ciphertext = unhexlify(ciphertext)
+
+	# Extract ciphertext body, IV, and salt
+	lenData = len(ciphertext)
+	salt = ciphertext[lenData - lenSalt:]
+	iv = ciphertext[lenData - lenIV - lenSalt : lenData - lenSalt]
+	ciphertext = ciphertext[:lenData - lenIV - lenSalt]
+
+	key, _ = deriveKey(passphrase, salt)
+	aes = AESGCM(key)
+	plaintext = aes.decrypt(iv, ciphertext, None)
+
+	return plaintext.decode("utf8")
 
 if __name__ == '__main__':
 
